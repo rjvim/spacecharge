@@ -15,6 +15,7 @@ class CreateTablePriceSet extends Migration
     {
         Schema::create('sc_price_templates', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('uuid')->unique();
             $table->string('name')->nullable();
             $table->string('base_price_unit')->nullable();
             $table->string('charge_type')->nullable();

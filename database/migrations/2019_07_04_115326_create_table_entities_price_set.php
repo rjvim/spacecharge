@@ -13,10 +13,10 @@ class CreateTableEntitiesPriceSet extends Migration
      */
     public function up()
     {
-        Schema::create('sc_entities_price_templates', function (Blueprint $table) {
+        Schema::create('sc_space_price_templates', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('price_template_id')->nullable();
-            $table->morphs('entity');
+            $table->integer('space_id')->unsigned()->nullable();
             $table->timestamp('applicable_from')->nullable();
             $table->timestamps();
         });
