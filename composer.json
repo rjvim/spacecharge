@@ -1,0 +1,50 @@
+{
+    "name": "rjvim/charge-it-up",
+    "description": "A Price configuration package for Entities in your Laravel App",
+    "keywords": [
+        "prices",
+        "booking",
+        "reservation"
+    ],
+    "homepage": "https://github.com/rjvim/permiso",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rajiv Seelam",
+            "email": "rajiv@betalectic.com",
+            "homepage": "https://betalectic.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.4",
+        "orchestra/testbench": "~3.7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Betalectic\\ChargeIt\\": "src"
+        }
+    },
+
+    "autoload-dev": {
+        "psr-4": {
+            "Betalectic\\ChargeIt\\Test\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Betalectic\\ChargeIt\\ChargeItServiceProvider"
+            ]
+        }
+    }
+}
