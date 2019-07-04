@@ -13,7 +13,7 @@ class CreateTablePriceSet extends Migration
      */
     public function up()
     {
-        Schema::create('ci_price_templates', function (Blueprint $table) {
+        Schema::create('sc_price_templates', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name')->nullable();
             $table->string('base_price_unit')->nullable();
@@ -31,6 +31,6 @@ class CreateTablePriceSet extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ci_price_templates');
+        Schema::dropIfExists('sc_price_templates');
     }
 }

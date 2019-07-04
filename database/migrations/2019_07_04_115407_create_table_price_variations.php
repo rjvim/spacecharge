@@ -13,7 +13,7 @@ class CreateTablePriceVariations extends Migration
      */
     public function up()
     {
-        Schema::create('ci_price_variations', function (Blueprint $table) {
+        Schema::create('sc_price_variations', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('price_template_id')->nullable();
             $table->integer('month_of_year')->nullable();
@@ -32,6 +32,6 @@ class CreateTablePriceVariations extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ci_price_variations');
+        Schema::dropIfExists('sc_price_variations');
     }
 }

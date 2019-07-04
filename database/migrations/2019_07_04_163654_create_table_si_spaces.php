@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTableEntitiesPriceSet extends Migration
+class CreateTableSiSpaces extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,13 @@ class CreateTableEntitiesPriceSet extends Migration
      */
     public function up()
     {
-        Schema::create('sc_entities_price_templates', function (Blueprint $table) {
+        Schema::create('si_spaces', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('price_template_id')->nullable();
-            $table->morphs('entity');
-            $table->timestamp('applicable_from')->nullable();
+            $table->string('name')->nullable();
+            $table->integer('capacity')->nullable();
+            $table->string('base_price_unit')->nullable();
+            $table->float('base_price_amount')->nullable();
+            $table->string('base_price_currency')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +31,6 @@ class CreateTableEntitiesPriceSet extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sc_entities_price_templates');
+        Schema::dropIfExists('si_spaces');
     }
 }
