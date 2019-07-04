@@ -1,17 +1,23 @@
 {
-    "name": "rjvim/charge-it-up",
+    "name": "rjvim/spacecharge",
     "description": "A Price configuration package for Entities in your Laravel App",
     "keywords": [
         "prices",
         "booking",
         "reservation"
     ],
-    "homepage": "https://github.com/rjvim/permiso",
+    "homepage": "https://github.com/rjvim/spacecharge",
     "license": "MIT",
     "authors": [
         {
             "name": "Rajiv Seelam",
             "email": "rajiv@betalectic.com",
+            "homepage": "https://betalectic.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Himanshu Dhiman",
+            "email": "himanshu@betalectic.com",
             "homepage": "https://betalectic.com",
             "role": "Developer"
         }
@@ -25,13 +31,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Betalectic\\ChargeIt\\": "src"
+            "Betalectic\\SpaceCharge\\": "src"
         }
     },
 
     "autoload-dev": {
         "psr-4": {
-            "Betalectic\\ChargeIt\\Test\\": "tests"
+            "Betalectic\\SpaceCharge\\Test\\": "tests"
         }
     },
     "scripts": {
@@ -43,7 +49,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Betalectic\\ChargeIt\\ChargeItServiceProvider"
+                "Betalectic\\SpaceCharge\\SpaceChargeServiceProvider"
             ]
         }
     }
