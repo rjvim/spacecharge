@@ -1,4 +1,0 @@
-* Space
-
--> saveSpace()
--> getSpace()

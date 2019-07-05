@@ -1,6 +1,6 @@
 <?php
 
-namespace Betalectic\Ocupado\Traits;
+namespace Betalectic\SpaceCharge\Traits;
 
 
 trait UUIDTrait

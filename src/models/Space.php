@@ -4,9 +4,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Space extends Model 
 {
+    use UUIDTrait;
 
 	protected $table = "sc_spaces";
 
     public $guarded = [];
+
+    protected $UUIDCode = 'uuid';
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->uniquify();
+        });
+    }
+
 
 }
