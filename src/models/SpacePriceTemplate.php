@@ -9,4 +9,9 @@ class SpacePriceTemplate extends Model
 
     public $guarded = [];
 
+    public function template()
+    {
+    	return $this->belongsTo(PriceTemplate::class, 'price_template_id');
+    }
+
 }

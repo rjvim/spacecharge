@@ -4,10 +4,10 @@
 class Charge 
 {
 
-	protected $chargeType;
-	protected $chargeUnit;
-	protected $currency;
-	protected $amount;
+	public $chargeType;
+	public $chargeUnit;
+	public $currency;
+	public $amount;
 
 	public function __construct($type, $unit, $currency, $amount)
 	{

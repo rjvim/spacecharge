@@ -22,4 +22,9 @@ class PriceTemplate extends Model
         });
     }
 
+    public function variations()
+    {
+        return $this->hasMany(PriceVariation::class, 'price_template_id');
+    }
+
 }

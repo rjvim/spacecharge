@@ -1,6 +1,7 @@
 <?php namespace Betalectic\SpaceCharge\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Betalectic\SpaceCharge\Traits\UUIDTrait;
 
 class Space extends Model 
 {
