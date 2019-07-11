@@ -10,6 +10,7 @@ use Betalectic\SpaceCharge\Models\PriceTemplate;
 use Betalectic\SpaceCharge\Models\SpacePriceTemplate;
 use Betalectic\SpaceCharge\Models\PriceVariation;
 use Betalectic\SpaceCharge\ValueObjects\Charge;
+use Betalectic\SpaceCharge\Helpers\OverlapHelper;
 
 class SpaceCharge
 {
@@ -54,15 +55,26 @@ class SpaceCharge
 		return $priceTemplate;
 	}
 
-	public function attachTemplate($spaceId, $templateId, $applicableFrom)
+	public function attachTemplate(Space $space, PriceTemplate $template, $applicableFrom = null)
 	{
-		$pivot = SpacePriceTemplate::create([
-			'price_template_id' => $templateId,
-			'space_id' => $spaceId,
-			'applicable_from' => $applicableFrom
-		]);
 
-		return $pivot;
+		if ($space->charge_type == $template->charge_type) {
+
+			if ( !$applicable_from ) {
+				$applicable_from = date("Y-m-d H:i:s");
+			}
+
+			$pivot = SpacePriceTemplate::create([
+				'price_template_id' => $template->id,
+				'space_id' => $space->id,
+				'applicable_from' => $applicableFrom
+			]);
+
+			return $pivot;
+		}
+
+		return false;
+
 	}
 
 	public function createPriceVariation($priceTemplateId, $incrementValue = 0, $dayOfWeek = null, $monthOfYear = null, $fromTime=null, $toTime = null)
@@ -124,7 +136,7 @@ class SpaceCharge
 								$query->with('variations');
 							}]);
 
-		return $template->first();
+		return $template->first()->template;
 
 	}
 
@@ -174,6 +186,96 @@ class SpaceCharge
 	public function getSpaceDetail($spaceId)
 	{
 		return Space::find($spaceId);
+	}
+
+	public function getApplicablePrice(Space $space, $date, $fromTime, $toTime)
+	{
+		$price = [];
+
+		$template = $this->getApplicableTemplate($space->id, $date);
+
+		if (!$template) {
+			$price['charge_type'] = $space->charge_type;
+			$price['charge_unit'] = $space->base_price_unit;
+			$price['price_to_charge'] = $space->base_price_amount;
+			$price['currency'] = $space->base_price_currency;
+
+			return $price;
+		} else {
+
+			$variations = $this->getPriceVariation($template->id);
+			
+			if (!$variations) {
+
+				$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $template->increment_value);
+
+				$price['charge_type'] = $template->charge_type;
+				$price['charge_unit'] = $template->base_price_unit;
+				$price['price_to_charge'] = $priceToCharge;
+				$price['currency'] = $space->base_price_currency;
+				
+				return $price;
+			} else {
+
+				$monthOfYear = date("m", strtotime($date));
+				$dayOfWeek = date("w", strtotime($date));
+
+				$overlapManager = new OverlapHelper();
+
+				$applicableVariation = PriceVariation::where('price_template_id', $template->id)
+													->whereNotNull('from_time')
+													->whereNotNull('to_time');
+
+
+				$applicableVariation = $applicableVariation->where(function ($query) use($overlapManager, $monthOfYear, $dayOfWeek, $fromTime, $toTime) {
+					$query->where(function($query) use($overlapManager, $monthOfYear, $dayOfWeek, $fromTime, $toTime) {
+						$query->where('month_of_year', $monthOfYear)->where('day_of_week', $dayOfWeek);
+					})->orWhere(function($query) use($monthOfYear, $dayOfWeek) {
+						$query->where('month_of_year', $monthOfYear)->whereNull('day_of_week');
+					})->orWhere(function($query) use($monthOfYear, $dayOfWeek) {
+						$query->where('day_of_week', $dayOfWeek)->whereNull('month_of_year');
+					})->orWhere(function($query){
+						$query->whereNull('day_of_week')->whereNull('month_of_year');
+					});
+				});
+
+				$applicableVariation = $overlapManager->isInRange($applicableVariation, "from_time", "to_time", $fromTime, $toTime);
+
+				$applicableVariation = $applicableVariation->first();
+				
+				$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $applicableVariation->increment_value);
+
+				$price['charge_type'] = $template->charge_type;
+				$price['charge_unit'] = $template->base_price_unit;
+				$price['price_to_charge'] = $priceToCharge;
+				$price['currency'] = $space->base_price_currency;
+				
+				return $price;
+			}
+
+		}
+
+
+	}
+
+	public function calculateIncrement($basePrice, $incrementType, $incrementValue)
+	{
+
+		if ($incrementType == 'percentage') {
+
+			$priceToAdd = ($basePrice * $incrementValue)/100;
+			$newPrice = $basePrice + $priceToAdd;
+
+			return $newPrice;
+
+		} else if($incrementValue == 'amount'){
+
+			$priceToAdd = $incrementValue;
+			$newPrice = $basePrice + $priceToAdd;
+
+			return $newPrice;
+		}
+
 	}
 
 }
