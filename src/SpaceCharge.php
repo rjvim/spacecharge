@@ -278,12 +278,29 @@ class SpaceCharge
 
 	}
 
-	
+
+	public function getTemplateDetail($templateId)
+	{
+		return PriceTemplate::find($templateId);
+	}
+
 	public function removeTemplateVariations($templateId)
 	{
 		$deleted = PriceVariation::where('price_template_id', $templateId)->delete();
 
 		return $deleted;
+	}
+
+	public function removeAttachedTemplate(Space $space, PriceTemplate $template)
+	{
+
+		$pivot = SpacePriceTemplate::where([
+			'price_template_id' => $template->id,
+			'space_id' => $space->id,
+		])->delete();
+
+		return $pivot;
+
 	}
 
 }
