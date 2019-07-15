@@ -278,4 +278,12 @@ class SpaceCharge
 
 	}
 
+	
+	public function removeTemplateVariations($templateId)
+	{
+		$deleted = PriceVariation::where('price_template_id', $templateId)->delete();
+
+		return $deleted;
+	}
+
 }
