@@ -83,23 +83,23 @@ class SpaceCharge
 		$data = [];
 		$data['price_template_id'] = $priceTemplateId;
 
-		if ($monthOfYear) {
+		if (!is_null($monthOfYear)) {
 			$data['month_of_year'] = $monthOfYear;
 		}
 
-		if ($dayOfWeek) {
+		if (!is_null($dayOfWeek)) {
 			$data['day_of_week'] = $dayOfWeek;
 		}
 
-		if ($fromTime) {
+		if (!is_null($fromTime)) {
 			$data['from_time'] = $fromTime;
 		}
 
-		if ($toTime) {
+		if (!is_null($toTime)) {
 			$data['to_time'] = $toTime;
 		}
 
-		if ($incrementValue) {
+		if (!is_null($incrementValue)) {
 			$data['increment_value'] = $incrementValue;
 		}
 
