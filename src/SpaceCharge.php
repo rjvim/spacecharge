@@ -60,8 +60,8 @@ class SpaceCharge
 
 		if ($space->charge_type == $template->charge_type) {
 
-			if ( !$applicable_from ) {
-				$applicable_from = date("Y-m-d H:i:s");
+			if ( !$applicableFrom ) {
+				$applicableFrom = date("Y-m-d H:i:s");
 			}
 
 			$pivot = SpacePriceTemplate::create([
@@ -136,7 +136,7 @@ class SpaceCharge
 								$query->with('variations');
 							}]);
 
-		return $template->first()->template;
+		return $template->first();
 
 	}
 
@@ -149,7 +149,7 @@ class SpaceCharge
 			$templates = $templates->with('variations');
 		}
 
-		return $templates->get();
+		return $templates->orderBy('created_at', "desc")->get();
 
 	}
 
