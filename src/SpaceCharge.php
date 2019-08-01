@@ -212,7 +212,6 @@ class SpaceCharge
 		} else {
 
 			$variations = $this->getPriceVariation($template->id);
-			
 			if (!$variations) {
 
 				$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $template->increment_value);
@@ -249,8 +248,12 @@ class SpaceCharge
 				$applicableVariation = $overlapManager->isInRange($applicableVariation, "from_time", "to_time", $fromTime, $toTime);
 
 				$applicableVariation = $applicableVariation->first();
-				
-				$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $applicableVariation->increment_value);
+
+				if ($applicableVariation) {
+					$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $applicableVariation->increment_value);
+				} else {
+					$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $template->increment_value);
+				}
 
 				$price['charge_type'] = $template->charge_type;
 				$price['charge_unit'] = $template->base_price_unit;
