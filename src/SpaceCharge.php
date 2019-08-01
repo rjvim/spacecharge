@@ -207,6 +207,7 @@ class SpaceCharge
 			$price['charge_unit'] = $space->base_price_unit;
 			$price['price_to_charge'] = $this->finalPrice($space->base_price_amount, $numberOfHours, $chargeMultiplier);
 			$price['currency'] = $space->base_price_currency;
+			$price['total_hours'] = $numberOfHours;
 
 			return $price;
 		} else {
@@ -220,6 +221,7 @@ class SpaceCharge
 				$price['charge_unit'] = $template->base_price_unit;
 				$price['price_to_charge'] = $this->finalPrice($priceToCharge, $numberOfHours, $chargeMultiplier);
 				$price['currency'] = $space->base_price_currency;
+				$price['total_hours'] = $numberOfHours;
 				
 				return $price;
 			} else {
@@ -259,6 +261,7 @@ class SpaceCharge
 				$price['charge_unit'] = $template->base_price_unit;
 				$price['price_to_charge'] = $this->finalPrice($priceToCharge, $numberOfHours, $chargeMultiplier);
 				$price['currency'] = $space->base_price_currency;
+				$price['total_hours'] = $numberOfHours;
 				
 				return $price;
 			}
