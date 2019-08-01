@@ -25,7 +25,7 @@ class SpaceCharge
 		$space = Space::create([
 			'entity_id' => $entity->getKey(),
 			'entity_type' => get_class($entity),
-			'capacity' => $capacity,
+			'capacity' => ($capacity) ? $capacity : 1,
 			'base_price_unit' => $baseCharge->chargeUnit,
 			'base_price_amount' => $baseCharge->amount,
 			'base_price_currency' => $baseCharge->currency,
@@ -135,8 +135,8 @@ class SpaceCharge
 							->with(['template' => function($query) {
 								$query->with('variations');
 							}]);
-
-		return $template->first();
+							
+		return $template->first()->template;
 
 	}
 
@@ -192,12 +192,20 @@ class SpaceCharge
 	{
 		$price = [];
 
+		$numberOfHours = $this->getNumberOfHours($fromTime, $toTime);
+
+		if ($space->charge_type == 'per-seat') {
+			$chargeMultiplier = $space->capacity;
+		} else {
+			$chargeMultiplier = 1;
+		}
+
 		$template = $this->getApplicableTemplate($space->id, $date);
 
 		if (!$template) {
 			$price['charge_type'] = $space->charge_type;
 			$price['charge_unit'] = $space->base_price_unit;
-			$price['price_to_charge'] = $space->base_price_amount;
+			$price['price_to_charge'] = $this->finalPrice($space->base_price_amount, $numberOfHours, $chargeMultiplier);
 			$price['currency'] = $space->base_price_currency;
 
 			return $price;
@@ -211,7 +219,7 @@ class SpaceCharge
 
 				$price['charge_type'] = $template->charge_type;
 				$price['charge_unit'] = $template->base_price_unit;
-				$price['price_to_charge'] = $priceToCharge;
+				$price['price_to_charge'] = $this->finalPrice($priceToCharge, $numberOfHours, $chargeMultiplier);
 				$price['currency'] = $space->base_price_currency;
 				
 				return $price;
@@ -225,7 +233,6 @@ class SpaceCharge
 				$applicableVariation = PriceVariation::where('price_template_id', $template->id)
 													->whereNotNull('from_time')
 													->whereNotNull('to_time');
-
 
 				$applicableVariation = $applicableVariation->where(function ($query) use($overlapManager, $monthOfYear, $dayOfWeek, $fromTime, $toTime) {
 					$query->where(function($query) use($overlapManager, $monthOfYear, $dayOfWeek, $fromTime, $toTime) {
@@ -247,7 +254,7 @@ class SpaceCharge
 
 				$price['charge_type'] = $template->charge_type;
 				$price['charge_unit'] = $template->base_price_unit;
-				$price['price_to_charge'] = $priceToCharge;
+				$price['price_to_charge'] = $this->finalPrice($priceToCharge, $numberOfHours, $chargeMultiplier);
 				$price['currency'] = $space->base_price_currency;
 				
 				return $price;
@@ -256,6 +263,13 @@ class SpaceCharge
 		}
 
 
+	}
+
+	public function getNumberOfHours($fromTime, $toTime) 
+	{
+		$difference = round((strtotime($toTime) - strtotime($fromTime))/3600, 1);
+
+		return $difference;
 	}
 
 	public function calculateIncrement($basePrice, $incrementType, $incrementValue)
@@ -301,6 +315,13 @@ class SpaceCharge
 
 		return $pivot;
 
+	}
+
+	public function finalPrice($perHourPrice, $numberOfHours, $capacity)
+	{
+		$finalPrice = $perHourPrice * $numberOfHours * $capacity;
+
+		return $finalPrice;
 	}
 
 }
