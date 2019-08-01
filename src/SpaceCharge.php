@@ -136,7 +136,7 @@ class SpaceCharge
 								$query->with('variations');
 							}]);
 							
-		return $template->first()->template;
+		return ($template->first()) ? $template->first()->template : null;
 
 	}
 
