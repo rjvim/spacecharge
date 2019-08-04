@@ -226,43 +226,55 @@ class SpaceCharge
 				return $price;
 			} else {
 
+				$slots = $this->timingsToSlots($variations, $date, $fromTime, $toTime);
+
 				$monthOfYear = date("m", strtotime($date));
 				$dayOfWeek = date("w", strtotime($date));
 
-				$overlapManager = new OverlapHelper();
-
-				$applicableVariation = PriceVariation::where('price_template_id', $template->id)
-													->whereNotNull('from_time')
-													->whereNotNull('to_time');
-
-				$applicableVariation = $applicableVariation->where(function ($query) use($overlapManager, $monthOfYear, $dayOfWeek, $fromTime, $toTime) {
-					$query->where(function($query) use($overlapManager, $monthOfYear, $dayOfWeek, $fromTime, $toTime) {
-						$query->where('month_of_year', $monthOfYear)->where('day_of_week', $dayOfWeek);
-					})->orWhere(function($query) use($monthOfYear, $dayOfWeek) {
-						$query->where('month_of_year', $monthOfYear)->whereNull('day_of_week');
-					})->orWhere(function($query) use($monthOfYear, $dayOfWeek) {
-						$query->where('day_of_week', $dayOfWeek)->whereNull('month_of_year');
-					})->orWhere(function($query){
-						$query->whereNull('day_of_week')->whereNull('month_of_year');
-					});
-				});
-
-				$applicableVariation = $overlapManager->isInRange($applicableVariation, "from_time", "to_time", $fromTime, $toTime);
-
-				$applicableVariation = $applicableVariation->first();
-
-				if ($applicableVariation) {
-					$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $applicableVariation->increment_value);
-				} else {
-					$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $template->increment_value);
-				}
-
 				$price['charge_type'] = $template->charge_type;
 				$price['charge_unit'] = $template->base_price_unit;
-				$price['price_to_charge'] = $this->finalPrice($priceToCharge, $numberOfHours, $chargeMultiplier);
 				$price['currency'] = $space->base_price_currency;
-				$price['total_hours'] = $numberOfHours;
 				
+				$price['price_to_charge'] = 0;
+				$price['total_hours'] = 0;
+				
+				foreach ($slots as $slot) {
+
+					$overlapManager = new OverlapHelper();
+
+					$applicableVariation = PriceVariation::where('price_template_id', $template->id)
+														->whereNotNull('from_time')
+														->whereNotNull('to_time');
+
+					$numberOfHours = $this->getNumberOfHours($slot['from_time'], $slot['to_time']);
+
+					$applicableVariation = $applicableVariation->where(function ($query) use($overlapManager, $monthOfYear, $dayOfWeek, $fromTime, $toTime) {
+						$query->where(function($query) use($overlapManager, $monthOfYear, $dayOfWeek) {
+							$query->where('month_of_year', $monthOfYear)->where('day_of_week', $dayOfWeek);
+						})->orWhere(function($query) use($monthOfYear, $dayOfWeek) {
+							$query->where('month_of_year', $monthOfYear)->whereNull('day_of_week');
+						})->orWhere(function($query) use($monthOfYear, $dayOfWeek) {
+							$query->where('day_of_week', $dayOfWeek)->whereNull('month_of_year');
+						})->orWhere(function($query){
+							$query->whereNull('day_of_week')->whereNull('month_of_year');
+						});
+					});
+
+					$applicableVariation = $overlapManager->isInRange($applicableVariation, "from_time", "to_time", $slot['from_time'], $slot['to_time']);
+
+					$applicableVariation = $applicableVariation->first();
+
+					if ($applicableVariation) {
+						$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $applicableVariation->increment_value);
+					} else {
+						$priceToCharge = $this->calculateIncrement($space->base_price_amount, $template->increment_type, $template->increment_value);
+					}
+
+					$price['price_to_charge'] += $this->finalPrice($priceToCharge, $numberOfHours, $chargeMultiplier);
+					$price['total_hours'] += $numberOfHours;
+					
+				}
+
 				return $price;
 			}
 
@@ -328,6 +340,57 @@ class SpaceCharge
 		$finalPrice = $perHourPrice * $numberOfHours * $capacity;
 
 		return $finalPrice;
+	}
+
+	public function timingsToSlots($variations, $date, $fromTime, $toTime)
+	{
+
+		$pricingSlots = [];
+
+		$monthOfYear = date("m", strtotime($date));
+		$dayOfWeek = date("w", strtotime($date));
+
+		foreach($variations as $pricing) {
+
+			if ($pricing->day_of_week == $dayOfWeek || $pricing->month_of_year == $monthOfYear) {
+
+				if($fromTime > $pricing->from_time && $fromTime < $pricing->to_time) {
+					$pricingSlots[] = [
+						"from_time" => $fromTime,
+						"to_time" => $pricing->to_time
+					];
+		        } else if($toTime > $pricing->from_time && $toTime < $pricing->to_time) {
+					$pricingSlots[] = [
+						"from_time" => $pricing->from_time,
+						"to_time" => $toTime
+					];
+		        } else if($fromTime < $pricing->from_time && $toTime > $pricing->to_time) {
+					$pricingSlots[] = [
+						"from_time" => $pricing->from_time,
+						"to_time" => $pricing->to_time
+					];
+		        } else if($fromTime == $pricing->from_time && $toTime == $pricing->to_time) {
+					$pricingSlots[] = [
+						"from_time" => $fromTime,
+						"to_time" => $toTime
+					];
+		        } else if($fromTime == $pricing->from_time && $toTime > $pricing->to_time) {
+					$pricingSlots[] = [
+						"from_time" => $fromTime,
+						"to_time" => $pricing->to_time
+					];
+		        } else if($fromTime < $pricing->from_time && $toTime == $pricing->to_time) {
+					$pricingSlots[] = [
+						"from_time" => $pricing->from_time,
+						"to_time" => $toTime
+					];
+		        }
+
+			}
+		}
+
+		return $pricingSlots;
+
 	}
 
 }
