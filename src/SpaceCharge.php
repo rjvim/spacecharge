@@ -120,7 +120,7 @@ class SpaceCharge
 
 	}
 
-	public function getApplicableTemplate($spaceId, $date = null)
+	public function getApplicableTemplate($spaceId, $date = null, $spaceTemplates = false)
 	{	
 
 		if (!$date) {
@@ -136,7 +136,11 @@ class SpaceCharge
 								$query->with('variations');
 							}]);
 							
-		return ($template->first()) ? $template->first()->template : null;
+		if ($spaceTemplates) {
+			return ($template->first()) ? $template->first() : null;
+		} else {
+			return ($template->first()) ? $template->first()->template : null;
+		}
 
 	}
 
